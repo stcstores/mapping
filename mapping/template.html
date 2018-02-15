@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Linking</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+
+        #linking {
+            float: left;
+            width: 1400px;
+        }
+
+        #sidebar {
+            position:fixed;
+            width: 500px;
+            top: 40px;
+            right: 0px;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        .sku {
+            font-family: monospace;
+            white-space: nowrap;
+            padding: 1em;
+        }
+
+        .link_details {
+            padding: 1em;
+            margin: 1em;
+            border: mediumaquamarine 3px solid;
+            overflow: hidden;
+            border-radius: 1em;
+            width: 400px;
+        }
+
+        .link_details p {
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        .listing {
+            border: #eee 3px solid;
+            margin: 1px;
+            background-color: #eee;
+            font-weight: bold;
+        }
+
+        #filters {
+            padding: 1em;
+            margin: 1em;
+        }
+
+        .stock_level {
+            text-align: center;
+        }
+
+        .channel_select td, .channel_select th {
+            padding: 0.25em;
+        }
+
+        .linked {
+            color: green;
+        }
+
+        .unlinked {
+            color: red;
+        }
+
+        .channel_status {
+            text-align: center:
+        }
+
+        .links {
+            height: 500px;
+            width: 500px;
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+<body>
+    <div id="linking">
+        <table id="linking_table">
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Title</th>
+                    <th>Department</th>
+                    <th>Stock Level</th>
+                    {% for channel in channels %}
+                    <th class="{{ channel.id }}">{{ channel }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for range in ranges %}
+                <tr>
+                    <td class="sku">{{ range.sku }}</td>
+                    <td class="title">{{ range.title }}</td>
+                    <td class="department">{{ range.department }}</td>
+                    <td class="stock_level">{{ range.stock_level }}</td>
+                    {% for channel in channels %}
+                        <td class="{{ channel.id }}">
+                            <button class="listing {% if range.channel_links[channel]|length > 0 %}linked{% else %}unlinked{% endif %}" id="{% for link in range.channel_links[channel] %}{{ link.link_id }}_{% endfor %}">{{ range.channel_links[channel]|length }}</button>
+                        </td>
+                    {% endfor %}
+                    <td class="search_text" hidden>{{ range.search_terms|join(' ') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+    </div>
+    </table>
+    <div id="sidebar">
+        <div id="filters">
+            <label for="filter">Filter</label>
+            <input type="text" id="filter" name="filter">
+            <button id="clear_filter">Clear</button>
+            <br><br>
+            <label for="department">Department</label>
+            <select name="department" id="department">
+                <option value=""></option>
+                {% for department in products.departments %}
+                <option value="{{ department }}">{{ department }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <table class="channel_select">
+                <tr>
+                    <th>Stock Level</th>
+                    <td><input type="radio" name="stock_level" value="both" checked>Both</td>
+                    <td><input type="radio" name="stock_level" value="in_stock">In Stock</td>
+                    <td><input type="radio" name="stock_level" value="out_of_stock">Out of Stock</td>
+                </tr>
+                {% for channel in channels %}
+                <tr>
+                    <th>{{ channel.name}}</th>
+                    <td><input type="radio" name="status_{{ channel.id }}" value="both">Both</td>
+                    <td><input type="radio" name="status_{{ channel.id }}" value="unlinked">Unlinked</td>
+                    <td><input type="radio" name="status_{{ channel.id }}" value="linked">Linked</td>
+                    <td><input type="radio" name="status_{{ channel.id }}" value="hidden" checked>Hidden</td>
+                </tr>
+                {% endfor %}
+        </table>
+        </div>
+        <div class="links">
+
+        </div>
+    </div>
+
+</body>
+<script>
+
+function is_substr(str, substr) {
+    return str.indexOf(substr) == -1;
+}
+
+function linked(row, channel_id) {
+    var cell = row.find('.' + channel_id);
+    var button = cell.find('button');
+    if (cell.find('button').text() == '0') {
+        return false;
+    }
+    return true;
+}
+
+function in_stock(row) {
+    var cell = row.find('.stock_level');
+    if (cell.text() === '0') {
+        return false;
+    }
+    return true;
+}
+
+function filter() {
+    var rows = $('#linking_table tbody tr');
+    rows.attr('hidden', true);
+    rows = department_filter(rows);
+    rows = stock_level_filter(rows);
+    {% for channel in channels %}
+    rows = channel_status_filter(rows, '{{ channel.id }}');
+    {% endfor %}
+    rows = text_filter(rows);
+    rows.attr('hidden', false);
+}
+
+function text_filter(rows) {
+    var search_text = $('#filter').val().toLowerCase();
+    return rows.filter(function() {
+        var row_text = $(this).find('.search_text').text().toLowerCase();
+        return !(is_substr(row_text, search_text))
+    });
+}
+
+function department_filter(rows) {
+    var department = $('#department option:selected').val();
+    if (department == '') {
+        return rows;
+    }
+    return rows.filter(function() {
+        row_department = $(this).find('.department').text();
+        return department == row_department;
+    });
+}
+
+function stock_level_filter(rows, filter) {
+    var in_stock_rows = [];
+    var out_of_stock_rows = [];
+    var filter = $('input[name="stock_level"]:checked').val();
+    if (filter == 'both') {
+        return rows;
+    } else if (filter == 'out_of_stock') {
+        return rows.filter(function() {
+            return !in_stock($(this));
+        });
+    } else if (filter == 'in_stock') {
+        return rows.filter(function() {
+            return in_stock($(this));
+        });
+    }
+}
+
+function channel_status_filter(rows, channel_id) {
+    var filter = $('input[name="status_' + channel_id + '"]:checked').val();
+    if (filter == 'hidden') {
+        $('.' + channel_id).attr('hidden', true);
+        return rows;
+    }
+    $('.' + channel_id).attr('hidden', false);
+    if (filter == 'both') {
+        return rows;
+    } else if (filter == 'linked') {
+        return rows.filter(function() {
+            return linked($(this), channel_id);
+        });
+    } else if (filter == 'unlinked') {
+        return rows.filter(function() {
+            return !linked($(this), channel_id);
+        });
+    }
+}
+
+function render_link_details(parent, links) {
+    for (var i=0; i<links.length; i++) {
+        parent.append(render_link(links[i]));
+    }
+}
+
+function render_link(link) {
+    var div = $("<div>", {"class": "link_details"});
+    div.append('<p>Channel: ' + link['channel']);
+    div.append('<p>Product SKU: ' + link['channel']);
+    div.append('<p>Product Title: ' + link['channel']);
+    div.append('<p>Channel SKU: ' + link['channel']);
+    div.append('<p>Channel Title: ' + link['channel']);
+    div.append('<p>' + link['channel_id_name'] + ': ' + link['channel_id']);
+    div.append('<p><a href="' + link['ur'] + '">View on ' + link['domain']);
+    return div;
+}
+
+$(document).ready(function() {
+
+    $('#clear_filter').click(function() {
+        $('#filter').val('');
+        filter();
+    });
+
+    $('#filter').keyup(function() {
+        filter();
+    });
+
+    $('input[type="radio"]').change(function() {
+        filter();
+    });
+
+    $('#department').change(function() {
+        filter();
+    })
+
+    filter();
+});
+</script>
+</html>
