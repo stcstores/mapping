@@ -118,11 +118,25 @@ class Channels:
     channels = [
         EBay('UK', '3572_461'),
         Amazon('UK', '2803_412'),
-        Amazon('AU', '5315_605'),
-        Amazon('JP', '5240_627'),
-        Amazon('CA', '2809_413'),
+        EBay('US', '3397_461'),
+        Amazon('US', '2808_413'),
+        Amazon('MX', '2810_413'),
+        EBay('FR', '3581_461'),
         Amazon('FR', '2806_412'),
+        EBay('DE', '3577_461'),
         Amazon('DE', '2804_412'),
+        EBay('IT', '3580_461'),
+        EBay('ES', '3594_461'),
+        EBay('AU', '3576_461'),
+        Amazon('AU', '5315_605'),
+        EBay('CA', '3578_461'),
+        EBay('CA FR', '3597_461'),
+        Amazon('CA', '2809_413'),
+        EBay('AT', '3596_461'),
+        EBay('BE', '3582_461'),
+        EBay('IE', '3595_461'),
+        Amazon('JP', '5240_627'),
+        Amazon('IN', '5056_604'),
     ]
 
     def __iter__(self):
