@@ -10,14 +10,22 @@
 
         #linking {
             float: left;
-            width: 1400px;
+            height: 90%;
         }
 
         #sidebar {
             position:fixed;
-            width: 550px;
             top: 40px;
             right: 0px;
+            font-size: 75%;
+            background: white;
+            z-index: 2;
+        }
+
+        #linking_table {
+            overflow: scroll;
+            width: 50%;
+            overflow: hidden:
         }
 
         table {
@@ -140,6 +148,9 @@
                     <td><input type="radio" name="stock_level" value="in_stock">In Stock</td>
                     <td><input type="radio" name="stock_level" value="out_of_stock">Out of Stock</td>
                 </tr>
+            </table>
+            <br>
+            <table class="channel_select">
                 {% for channel in channels %}
                 <tr>
                     <th>{{ channel.name}}</th>
@@ -187,6 +198,7 @@ function filter() {
     {% endfor %}
     rows = text_filter(rows);
     rows.attr('hidden', false);
+    $('#linking_table').css('width', '20');
 }
 
 function text_filter(rows) {
@@ -259,7 +271,7 @@ function render_link(link) {
     div.append('<p>Channel SKU: ' + link['channel']);
     div.append('<p>Channel Title: ' + link['channel']);
     div.append('<p>' + link['channel_id_name'] + ': ' + link['channel_id']);
-    div.append('<p><a href="' + link['ur'] + '">View on ' + link['domain']);
+    div.append('<p><a href="' + link['url'] + '">View on ' + link['domain']);
     return div;
 }
 
