@@ -1,4 +1,7 @@
 *.xlsx
+files/*
+mapping_launcher.py
+mapping.html
 
 .pytest_cache
 *.~lock*
