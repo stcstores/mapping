@@ -8,7 +8,9 @@ class Main:
 
     def __init__(self, output_path):
 
-        header = ['Range SKU', 'Range Title', 'Stock Level', 'Search SKU']
+        header = [
+            'Range SKU', 'Range Title', 'Department', 'Stock Level',
+            'Search SKU']
         for channel in channels:
             header.append(channel.name)
         data = []
@@ -16,7 +18,8 @@ class Main:
         for product_range in ranges:
             row = [
                 product_range.sku, product_range.title,
-                product_range.stock_level, product_range.products[0].sku]
+                product_range.deparmtent, product_range.stock_level,
+                product_range.products[0].sku]
             for channel in channels:
                 if channel in product_range.channel_links:
                     row.append(len(product_range.channel_links[channel]))
