@@ -18,7 +18,7 @@ class Main:
         for product_range in ranges:
             row = [
                 product_range.sku, product_range.title,
-                product_range.deparmtent, product_range.stock_level,
+                product_range.department, product_range.stock_level,
                 product_range.products[0].sku]
             for channel in channels:
                 if channel in product_range.channel_links:
